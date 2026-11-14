@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User accounts
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || exists(/databases/$(database)/documents/users/$(request.auth.uid)));
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // Applicant Profiles (Resumes, Skills, Details)
+    match /applicantProfiles/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // Job Postings
+    match /jobs/{jobId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.recruiterId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.recruiterId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.recruiterId == request.auth.uid;
+    }
+
+    // Job Applications
+    match /applications/{applicationId} {
+      allow get: if isSignedIn() && (
+        resource.data.applicantId == request.auth.uid || 
+        resource.data.recruiterId == request.auth.uid ||
+        exists(/databases/$(database)/documents/users/$(request.auth.uid))
+      );
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.applicantId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        resource.data.applicantId == request.auth.uid || 
+        resource.data.recruiterId == request.auth.uid ||
+        exists(/databases/$(database)/documents/users/$(request.auth.uid))
+      );
+      allow delete: if isSignedIn() && resource.data.applicantId == request.auth.uid;
+    }
+
+    // Saved Jobs
+    match /savedJobs/{savedJobId} {
+      allow get, list: if isSignedIn() && (resource == null || resource.data.applicantId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.applicantId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.applicantId == request.auth.uid;
+    }
+
+    // Learning Progress
+    match /learningProgress/{progressId} {
+      allow get, list: if isSignedIn() && (resource == null || resource.data.applicantId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.applicantId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.applicantId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.applicantId == request.auth.uid;
+    }
+  }
+}

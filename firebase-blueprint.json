@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account information and role in the platform",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "format": "email", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["applicant", "recruiter"], "maxLength": 20 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ApplicantProfile": {
+      "title": "ApplicantProfile",
+      "description": "Applicant detailed resume and skill profile",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 256 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "degree": { "type": "string", "maxLength": 100 },
+        "college": { "type": "string", "maxLength": 150 },
+        "experienceYears": { "type": "number" },
+        "programmingLanguages": { "type": "array" },
+        "frameworks": { "type": "array" },
+        "tools": { "type": "array" },
+        "softSkills": { "type": "array" },
+        "projects": { "type": "array" },
+        "certifications": { "type": "array" },
+        "resumeFileName": { "type": "string", "maxLength": 256 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["userId", "fullName"]
+    },
+    "JobPosting": {
+      "title": "JobPosting",
+      "description": "Job vacancy posted by a recruiter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 150 },
+        "company": { "type": "string", "maxLength": 150 },
+        "location": { "type": "string", "maxLength": 100 },
+        "salary": { "type": "string", "maxLength": 100 },
+        "experience": { "type": "string", "maxLength": 100 },
+        "education": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 5000 },
+        "requiredSkills": { "type": "array" },
+        "preferredSkills": { "type": "array" },
+        "employmentType": { "type": "string", "maxLength": 50 },
+        "vacancies": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "closed"], "maxLength": 20 },
+        "recruiterId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["title", "company", "description", "recruiterId"]
+    },
+    "JobApplication": {
+      "title": "JobApplication",
+      "description": "Application submitted by an applicant for a job",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "jobId": { "type": "string", "maxLength": 128 },
+        "applicantId": { "type": "string", "maxLength": 128 },
+        "recruiterId": { "type": "string", "maxLength": 128 },
+        "jobTitle": { "type": "string", "maxLength": 150 },
+        "company": { "type": "string", "maxLength": 150 },
+        "applicantName": { "type": "string", "maxLength": 100 },
+        "applicantEmail": { "type": "string", "format": "email", "maxLength": 256 },
+        "matchScore": { "type": "number" },
+        "matchedSkills": { "type": "array" },
+        "missingSkills": { "type": "array" },
+        "status": {
+          "type": "string",
+          "enum": ["Applied", "Under Review", "Shortlisted", "Interview Scheduled", "Rejected", "Selected"],
+          "maxLength": 50
+        },
+        "appliedDate": { "type": "string", "maxLength": 64 },
+        "appliedDateStr": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["jobId", "applicantId", "jobTitle", "company", "status"]
+    },
+    "SavedJob": {
+      "title": "SavedJob",
+      "description": "Saved bookmarks of jobs by applicants",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "applicantId": { "type": "string", "maxLength": 128 },
+        "jobId": { "type": "string", "maxLength": 128 },
+        "savedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["applicantId", "jobId"]
+    },
+    "LearningSkill": {
+      "title": "LearningSkill",
+      "description": "Applicant skill gap learning tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "applicantId": { "type": "string", "maxLength": 128 },
+        "skillName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["to_learn", "in_progress", "completed"], "maxLength": 30 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["applicantId", "skillName", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User account info and platform role"
+    },
+    "/applicantProfiles/{userId}": {
+      "schema": { "$ref": "#/entities/ApplicantProfile" },
+      "description": "Extracted applicant resume details and skills"
+    },
+    "/jobs/{jobId}": {
+      "schema": { "$ref": "#/entities/JobPosting" },
+      "description": "Job vacancy postings created by recruiters"
+    },
+    "/applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/JobApplication" },
+      "description": "Applications submitted to jobs"
+    },
+    "/savedJobs/{savedJobId}": {
+      "schema": { "$ref": "#/entities/SavedJob" },
+      "description": "Bookmarks of jobs by applicants"
+    },
+    "/learningProgress/{progressId}": {
+      "schema": { "$ref": "#/entities/LearningSkill" },
+      "description": "Applicant skill learning progress"
+    }
+  }
+}

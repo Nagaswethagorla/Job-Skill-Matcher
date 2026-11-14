@@ -1,0 +1,6 @@
+{
+  "name": "Job Skill Matcher – AI Career Assistant",
+  "description": "AI-powered career assistant and job matching platform with resume skill extraction, compatibility scoring, gap analysis, and course recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
